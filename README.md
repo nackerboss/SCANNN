@@ -8,28 +8,6 @@
 
 # SCANNN
 
-A compact repo for generating text embeddings (SentenceTransformers), saving them to HDF5, building high-performance ScaNN nearest-neighbor indexes, running similarity queries, and benchmarking recall vs. brute-force.
-
-## Contents
-- Notebooks
-  - REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb — end-to-end pipeline: embed, normalize, save, build ScaNN, evaluate, query.
-  - ScaNN_Embedding_Search_Index.ipynb — alternate/demo notebook with interactive progress widgets and examples.
-- Data
-  - agnews_embeddings.h5 — precomputed normalized embeddings (HDF5).
-- Environment
-  - scann-env/ — optional Python virtual environment included in the workspace.
-- Utilities / Scripts
-  - runwsl.bat — helper script for Windows Subsystem for Linux usage.
-  - portproxy.bat — helper script for port foward from WSL to Window
-- Metadata
-  - .gitignore
-
-## Key features
-- Generate embeddings with SentenceTransformers (default model: `all-MiniLM-L6-v2`).
-- L2-normalize embeddings (required for dot-product / angular similarity with ScaNN).
-
-# SCANNN
-
 SCANNN is a compact, reproducible workspace for:
 
 - generating sentence embeddings (SentenceTransformers),
@@ -112,3 +90,7 @@ Repository
 
 - `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
 
+#Contributors
+<a href="https://github.com/nackerboss/SCANNN/graphs/contributors">
+  <img src="https://camo.githubusercontent.com/f2aa1fd987013e0c261f0eda02150c9a8e62c89c00059d41825d323a61f4060e/68747470733a2f2f636f6e747269622e726f636b732f696d6167653f7265706f3d6e61636b6572626f73732f5343414e4e4e" data-canonical-src="https://contrib.rocks/image?repo=nackerboss/SCANNN" style="max-width: 100%;">
+</a>

@@ -26,91 +26,88 @@ A compact repo for generating text embeddings (SentenceTransformers), saving the
 ## Key features
 - Generate embeddings with SentenceTransformers (default model: `all-MiniLM-L6-v2`).
 - L2-normalize embeddings (required for dot-product / angular similarity with ScaNN).
-- Save/load embeddings in HDF5 with metadata (dimension, description).
-- Build ScaNN index (tree + asymmetric hashing + reorder) for fast approximate nearest neighbors.
-- Optionally compute exact neighbors with ScaNN brute-force for recall benchmarking.
-- Demo queries and interactive outputs for inspecting results.
 
-## Quick start (recommended)
-1. Create or activate a Python venv (or use the provided scann-env):
-   - python3 -m venv .venv && source .venv/bin/activate
-2. Install required packages:
+# SCANNN
+
+SCANNN is a compact, reproducible workspace for:
+
+- generating sentence embeddings (SentenceTransformers),
+- saving embeddings to HDF5,
+- building ScaNN approximate nearest-neighbor indexes, and
+- benchmarking retrieval quality vs exact search.
+
+Repository layout
+- `REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb` — primary end-to-end notebook (embed → save → build → evaluate → query).
+- `ScaNN_Embedding_Search_Index.ipynb` — demo notebook with interactive widgets and shorter examples.
+- `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
+- `scann-env/` — optional reference Python virtual environment included in the workspace.
+- `frontend/` — optional React + Vite demo for interactive search.
+
+Quick start
+
+1. Create and activate a virtual environment
+
+   - Windows (cmd.exe):
+     ```cmd
+     python -m venv .venv
+     .\.venv\Scripts\activate
+     ```
+
+   - macOS / Linux:
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
+
+2. Install dependencies
+
 ```bash
-# language: bash
-pip install scann sentence-transformers datasets h5py numpy
-```
-3. Open either notebook in Colab / Jupyter:
-   - [REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb](REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb) — full workflow
-   - [ScaNN_Embedding_Search_Index.ipynb](ScaNN_Embedding_Search_Index.ipynb) — demo / widgets
-
-## Typical workflow summary
-1. Load text dataset (e.g., Hugging Face `ag_news`) or your own dataset.
-2. Generate embeddings with SentenceTransformers:
-   - call `generate_and_normalize(data)` to obtain L2-normalized embeddings.
-3. Save embeddings to HDF5 (e.g., `agnews_embeddings.h5`) with attributes for dimension/description.
-4. Build a ScaNN index with recommended parameters (example uses a tree builder, AH quantization, and a reorder step).
-5. Query the index and optionally compute recall vs. ScaNN brute-force searcher.
-
-Example builder snippet (see notebook for full code and parameters):
-```python
-# language: python
-builder = scann.scann_ops_pybind.builder(
-    normalized_dataset_embeddings,
-    K_NEIGHBORS,
-    "dot_product"
-)
-
-tree_configured = builder.tree(
-    num_leaves=num_leaves,
-    num_leaves_to_search=num_leaves_to_search,
-    training_sample_size=training_sample_size
-)
-
-ah_configured = tree_configured.score_ah(
-    8,  # dimensions per subvector
-    anisotropic_quantization_threshold=0.2
-)
-
-reorder_configured = ah_configured.reorder(REORDER_NEIGHBORS)
-searcher = reorder_configured.build()
+pip install -r requirements.txt
 ```
 
-## How to load precomputed embeddings
+3. Run Jupyter and open the notebooks
+
+```bash
+jupyter lab
+```
+
+Open `REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb` for the full pipeline or `ScaNN_Embedding_Search_Index.ipynb` for the demo.
+
+Typical workflow
+- Load a text dataset (e.g., HF `ag_news`) or your own corpus.
+- Generate embeddings with a SentenceTransformers model (e.g., `all-MiniLM-L6-v2`).
+- L2-normalize embeddings (recommended for dot-product queries with ScaNN).
+- Save embeddings to HDF5 with descriptive attributes.
+- Build a ScaNN index (tree + AH quantization + reorder) and run approximate queries.
+- Optionally compute exact nearest neighbors to measure recall@k.
+
+Quick example — load embeddings
+
 ```python
-# language: python
 import h5py
-with h5py.File('agnews_embeddings.h5','r') as f:
-    emb = f['agnews'][:]
-    print(emb.shape)
-    print(f['agnews'].attrs.get('description'))
+with h5py.File('agnews_embeddings.h5', 'r') as f:
+    embeddings = f['agnews'][:]
+    print('shape', embeddings.shape)
+    print('description:', f['agnews'].attrs.get('description'))
 ```
 
-## Notable variables / functions (see notebooks)
-- [`generate_and_normalize`](REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb) — embeds and L2-normalizes inputs.
-- [`compute_recall`](REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb) — utility to compute recall@k vs brute-force.
-- [`run_query`](ScaNN_Embedding_Search_Index.ipynb) — helper to run sample queries and print results.
-- `K_NEIGHBORS`, `REORDER_NEIGHBORS` — index/query parameter constants used when building the ScaNN index.
-- ScaNN builder usage via `scann.scann_ops_pybind.builder` (see notebooks).
+Troubleshooting & tips
+- Use a virtual environment to avoid permission/packaging issues.
+- If you need GPU inference with SentenceTransformers, install a CUDA-enabled PyTorch build.
+- ScaNN installation may require a platform-specific wheel; consult ScaNN docs if `pip install scann` fails.
 
-## Troubleshooting / notes
-- Installing scann in some environments may require specific wheels or OS packages. If you encounter "externally-managed-environment" pip errors, use a venv or conda env.
-- GPU is used by SentenceTransformers only if a CUDA-enabled PyTorch is available; otherwise CPU fallback is used.
-- The included `scann-env/` virtual environment can be used as reference; creating a fresh venv is recommended.
+Next steps (optional)
+- Add a `requirements.txt` (already added) or `pyproject.toml` for reproducible installs.
+- Add a small runnable script that reproduces the notebook pipeline end-to-end.
 
-## License & credits
-- This repo uses SentenceTransformers and ScaNN (Google). Check respective licenses.
-- The notebooks include examples using the Hugging Face `ag_news` dataset for benchmarking.
+License & credits
+- Uses SentenceTransformers, ScaNN, and Hugging Face datasets — see the corresponding projects for license details.
 
-## Contact / next steps
-- Open the notebooks to run the pipeline end-to-end:
-  - [REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb](REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb)
-  - [ScaNN_Embedding_Search_Index.ipynb](ScaNN_Embedding_Search_Index.ipynb)
+Repository
+- https://github.com/nackerboss/SCANNN
+- `REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb` — primary end-to-end notebook (embed → save → build → evaluate → query).
 
-### Top contributors:
+- `ScaNN_Embedding_Search_Index.ipynb` — demo notebook with interactive widgets and shorter examples.
 
-<a href="https://github.com/nackerboss/SCANNN/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nackerboss/SCANNN" />
-</a>
-
-
+- `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
 

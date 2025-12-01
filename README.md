@@ -20,6 +20,7 @@ A compact repo for generating text embeddings (SentenceTransformers), saving the
   - scann-env/ — optional Python virtual environment included in the workspace.
 - Utilities / Scripts
   - runwsl.bat — helper script for Windows Subsystem for Linux usage.
+  - portproxy.bat — helper script for port foward from WSL to Window
 - Metadata
   - .gitignore
 

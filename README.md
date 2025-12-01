@@ -16,7 +16,7 @@ SCANNN is a compact, reproducible workspace for:
 - benchmarking retrieval quality vs exact search.
 
 Repository layout
-- `REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb` — primary end-to-end notebook (embed → save → build → evaluate → query).
+- `Scann_Benchmark.ipynb` — benchmark notebook.
 - `ScaNN_Embedding_Search_Index.ipynb` — demo notebook with interactive widgets and shorter examples.
 - `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
 - `scann-env/` — optional reference Python virtual environment included in the workspace.

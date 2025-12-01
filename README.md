@@ -84,7 +84,7 @@ License & credits
 
 Repository
 - https://github.com/nackerboss/SCANNN
-- `REAL_MAIN_ScaNN_Embedding_Search_Index.ipynb` — primary end-to-end notebook (embed → save → build → evaluate → query).
+- `Scann_Benchmark.ipynb` — benchmark notebook.
 
 - `ScaNN_Embedding_Search_Index.ipynb` — demo notebook with interactive widgets and shorter examples.
 

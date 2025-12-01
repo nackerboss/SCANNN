@@ -114,7 +114,5 @@ with h5py.File('agnews_embeddings.h5','r') as f:
   <img src="https://contrib.rocks/image?repo=nackerboss/SCANNN" />
 </a>
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 

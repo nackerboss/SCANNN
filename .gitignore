@@ -1,3 +1,5 @@
 scann-env/
 runwsl.bat
 agnews_embeddings.h5
+web.md
+__pycache__/main.cpython-312.pyc

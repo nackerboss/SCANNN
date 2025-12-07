@@ -6,9 +6,9 @@
 ![Pandas](https://img.shields.io/badge/Pandas-2.3.3-150458?logo=pandas&logoColor=white)
 ![NumPy](https://img.shields.io/badge/NumPy-2.3.4-013243?logo=numpy&logoColor=white)
 
-# SCANNN
+# SCANN
 
-SCANNN is a compact, reproducible workspace for:
+SCANN is a compact, reproducible workspace for:
 
 - generating sentence embeddings (SentenceTransformers),
 - saving embeddings to HDF5,

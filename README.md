@@ -16,7 +16,7 @@ SCANN is a compact, reproducible workspace for:
 - benchmarking retrieval quality vs exact search.
 
 Repository layout
-- `Scann_Benchmark.ipynb` — benchmark notebook.
+- `ScaNN_Embedding_Search_Index.ipynb` — benchmark notebook.
 - `ScaNN_Embedding_Search_Index_-_Demo_and_Benchmarking.ipynb` — demo notebook with interactive widgets and shorter examples.
 - `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
 - `scann-env/` — optional reference Python virtual environment included in the workspace.
@@ -64,10 +64,28 @@ Quick example — load embeddings
 
 ```python
 import h5py
-with h5py.File('agnews_embeddings.h5', 'r') as f:
-    embeddings = f['agnews'][:]
-    print('shape', embeddings.shape)
-    print('description:', f['agnews'].attrs.get('description'))
+
+filename = 'glove-50-angular.hdf5'
+dataset_train = 'train'
+dataset_test = 'test'
+dataset_truth = 'neighbors'
+
+try:
+    with h5py.File(filename, 'r') as f:
+        loaded_train_embeddings_raw = f[dataset_train][:]
+        loaded_train_embeddings = loaded_train_embeddings_raw / np.linalg.norm(loaded_train_embeddings_raw, axis=1, keepdims=True)
+        loaded_test_embeddings_raw = f[dataset_test][:]
+        loaded_test_embeddings = loaded_test_embeddings_raw / np.linalg.norm(loaded_test_embeddings_raw, axis=1, keepdims=True)
+        loaded_truth_embedding_raw = f[dataset_truth][:]
+        loaded_truth_embedding = loaded_truth_embedding_raw / np.linalg.norm(loaded_truth_embedding_raw, axis=1, keepdims=True)
+
+        print("\nEmbeddings loaded successfully.")
+        print("Train shape:", loaded_train_embeddings.shape)
+        print("Test shape:", loaded_test_embeddings.shape)
+        print("Truth shape:", loaded_truth_embedding.shape)
+
+except Exception as e:
+    print(f"An error occurred during loading: {e}")
 ```
 
 Troubleshooting & tips
@@ -84,9 +102,9 @@ License & credits
 
 Repository
 - https://github.com/nackerboss/SCANNN
-- `Scann_Benchmark.ipynb` — benchmark notebook.
+- `ScaNN_Embedding_Search_Index.ipynb` — quick demo notebook.
 
-- `ScaNN_Embedding_Search_Index_-_Demo_and_Benchmarking.ipynb` — demo notebook with interactive widgets and shorter examples.
+- `ScaNN_Embedding_Search_Index_-_Demo_and_Benchmarking.ipynb` — Full demo notebook; contains arbitrary queries, and benchmark tools.
 
 - `agnews_embeddings.h5` — example precomputed, normalized embeddings (HDF5).
 

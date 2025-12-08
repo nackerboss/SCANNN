@@ -1,0 +1,61 @@
+name: Check Server Status
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Runs every 15 minutes
+  workflow_dispatch:       # Allows you to click "Run workflow" manually
+
+permissions:
+  contents: write          # Needed to push the badge update to your README
+
+jobs:
+  ping-and-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check URL and Update Badge
+        run: |
+          # --- Configuration ---
+          TARGET_URL="[http://scann.ddns.net:8000/badge](http://scann.ddns.net:8000/badge)"
+          
+          # Online Image
+          IMG_ONLINE="[https://img.shields.io/badge/STATUS-online-green](https://img.shields.io/badge/STATUS-online-green)"
+          
+          # Offline Image (Escaped for sed)
+          IMG_OFFLINE="[https://img.shields.io/badge/STATUS-offline-red?link=mailto%3Aminh.mangbachkhoahochiminh%40hcmut.edu.vn](https://img.shields.io/badge/STATUS-offline-red?link=mailto%3Aminh.mangbachkhoahochiminh%40hcmut.edu.vn)"
+          
+          # --- Logic ---
+          echo "Pinging $TARGET_URL..."
+          
+          # Curl flags: -s (silent), -o /dev/null (hide output), -w (write HTTP code), --max-time 10 (timeout)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$TARGET_URL")
+          
+          echo "Response Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "Server is ONLINE."
+            BADGE="![Status]($IMG_ONLINE)"
+          else
+            echo "Server is OFFLINE."
+            BADGE="![Status]($IMG_OFFLINE)"
+          fi
+
+          # Use sed to replace the content between the markers in README.md
+          sed -i "s|.*|$BADGE|g" README.md
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "Status Bot"
+          git config --global user.email "actions@github.com"
+          
+          # Only commit if the file actually changed
+          if [[ -n $(git status -s README.md) ]]; then
+            git add README.md
+            git commit -m "Update status badge: $(date)"
+            git push
+          else
+            echo "No status change detected. Skipping commit."
+          fi

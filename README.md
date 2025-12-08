@@ -1,7 +1,5 @@
 # WEB
-<img src="http://scann.đns.net:8000/badge"
-     alt="Dynamic Status Badge"
-     onerror="this.onerror=null; this.src='https://img.shields.io/badge/STATUS-offline-red?link=mailto%3Aminh.mangbachkhoahochiminh%40hcmut.edu.vn'">
+![Status](https://img.shields.io/badge/STATUS-checking...-lightgrey)
 
 # Tech stack
 

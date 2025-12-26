@@ -4,24 +4,50 @@
 # --- 1. INSTALL DEPENDENCIES ---
 # Recommended installation command:
 # pip install fastapi uvicorn scann sentence-transformers datasets nest_asyncio 'h5py>=3.0.0'
-
 import os
+os.system("cls" if os.name == "nt" else "clear")
+print("NOT LLM TRUST".center(100,"="))
+print("importing time lib",end="")
 import time
+print("\r imported time lib")
+print("importing numpy",end="")
 import numpy as np
+print("\r imported numpy")
+print("importing uvicorn",end="")
 import uvicorn
+print("\r imported uvicorn")
 # import nest_asyncio # Not needed for standard local execution
+print("importing ayncio",end="")
 import asyncio
+print("\r imported asyncio")
+print("importing fastAPI",end="")
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+print("\r imported fastAPI")
+print("importing pydantic",end="")
 from pydantic import BaseModel
+print("\r imported pydantic")
+print("importing sentence_transformers",end="")
 from sentence_transformers import SentenceTransformer
+print("\r imported sentence_transformers")
+print("importing scann",end="")
 import scann
+print("\r imported scann")
+print("importing dataset",end="")
 from datasets import load_dataset
+print("\r imported dataset")
 # from pyngrok import ngrok # REMOVED
+print("importing torch",end="")
 import torch
+print("\r imported torch")
+print("importing asynccontextmanager",end="")
 from contextlib import asynccontextmanager
+print("\r imported asynccontextmanager")
+print("import h5py",end="")
 import h5py
-
+print("\r imported h5py")
+print("LOADED ALL LIB".center(100,"="))
+os.system("cls" if os.name == "nt" else "clear")
 # Apply nest_asyncio immediately to allow nested event loops in Colab
 # nest_asyncio.apply() # REMOVED for local execution
 
@@ -34,11 +60,11 @@ K_NEIGHBORS = 10
 embedding_model = None
 searcher = None
 dataset_texts = []
-normalized_dataset_embeddings = None
+loaded_train_embeddings = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global embedding_model, searcher, dataset_texts, normalized_dataset_embeddings
+    global embedding_model, searcher, dataset_texts, loaded_train_embeddings
     print("--- SERVER STARTUP ---")
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -57,25 +83,44 @@ async def lifespan(app: FastAPI):
         # Load Embeddings (Assumes 'agnews_embeddings.h5' exists locally)
         # NOTE: If this file does not exist, you'll need to run the embedding
         # generation part (currently commented out) once to create it.
+        filename = 'agnews_embeddings.h5'
+        dataset_train = 'train'
+        dataset_test = 'test'
+        dataset_truth = 'neighbors'
+
+
+        filename = 'agnews_embeddings.h5'
+        dataset_train = 'train'
+        dataset_test = 'test'
+        dataset_truth = 'neighbors'
+
         try:
             with h5py.File(filename, 'r') as f:
-                normalized_dataset_embeddings = f[dataset_name][:]
+                # Access the dataset
+                loaded_train_embeddings_raw = f[dataset_train][:]
+                loaded_train_embeddings = loaded_train_embeddings_raw / np.linalg.norm(loaded_train_embeddings_raw, axis=1, keepdims=True)
+                loaded_test_embeddings_raw = f[dataset_test][:]
+                loaded_test_embeddings = loaded_test_embeddings_raw / np.linalg.norm(loaded_test_embeddings_raw, axis=1, keepdims=True)
+                loaded_truth_embedding_raw = f[dataset_truth][:]
+                loaded_truth_embedding = loaded_truth_embedding_raw / np.linalg.norm(loaded_truth_embedding_raw, axis=1, keepdims=True)
+
                 print("\nEmbeddings loaded successfully.")
-                print("Shape:", normalized_dataset_embeddings.shape)
-                print("Metadata description:", f[dataset_name].attrs['description'])
+                print("Train shape:", loaded_train_embeddings.shape)
+                print("Test shape:", loaded_test_embeddings.shape)
+                print("Truth shape:", loaded_truth_embedding.shape)
+
+        #       print("Metadata description:", f[dataset_name].attrs['description'])
 
         except Exception as e:
-            print(f"An error occurred during loading HDF5 file: {e}")
-            # You might want to halt or generate the embeddings here if needed
-            normalized_dataset_embeddings = None # Ensure searcher isn't built if load fails
+            print(f"An error occurred during loading: {e}")
 
-        if normalized_dataset_embeddings is not None:
+        if loaded_train_embeddings is not None:
             print("4. Build ScaNN Index (Partitioning -> Scoring -> Reordering)...")
             # Theory: Partitioning (Tree)
             num_leaves = int(np.sqrt(DATASET_SIZE))
 
             builder = scann.scann_ops_pybind.builder(
-                normalized_dataset_embeddings, K_NEIGHBORS, "dot_product"
+                loaded_train_embeddings, K_NEIGHBORS, "dot_product"
             ).tree(
                 num_leaves=num_leaves,
                 num_leaves_to_search=max(int(num_leaves*0.1), 10),
@@ -118,6 +163,12 @@ class BenchmarkRequest(BaseModel):
 def health_check():
     return {"status": "ok", "ready": searcher is not None}
 
+@app.get("/badge")
+def get_badge():
+    return {"schemaVersion": 1,
+            "label": "status",
+            "message": "online" if searcher is not None else "offline",
+            "color": "green" if searcher is not None else "red"}
 @app.post("/search")
 def search(query: SearchQuery):
     if not searcher: raise HTTPException(503, "Not ready. Model might still be loading or embeddings are missing.")
@@ -129,11 +180,11 @@ def search(query: SearchQuery):
 
     # 2. Search
     # Ensure we don't ask for more neighbors than ScaNN was configured for (K_NEIGHBORS)
-    final_k = min(query.k_neighbors, K_NEIGHBORS)
+    final_k = query.k_neighbors
     indices, distances = searcher.search(q_emb, final_num_neighbors=final_k)
 
     elapsed = (time.time()-start)*1000
-    print(query,"time taked:",elapsed)
+    print(query,"time take:",elapsed)
     # Cast idx to int to avoid numpy.uint32 TypeError
     results = [{"rank": i+1, "text": dataset_texts[int(idx)], "similarity": float(d), "dataset_index": int(idx)}
                for i, (idx, d) in enumerate(zip(indices, distances))]
@@ -155,7 +206,7 @@ def benchmark(req: BenchmarkRequest):
         print("Running Brute Force...")
         bf_start = time.time()
         # Create a raw brute force searcher for comparison
-        bf_searcher = scann.scann_ops_pybind.builder(normalized_dataset_embeddings, K_NEIGHBORS, "dot_product").score_brute_force().build()
+        bf_searcher = scann.scann_ops_pybind.builder(loaded_train_embeddings, K_NEIGHBORS, "dot_product").score_brute_force().build()
         bf_idx, _ = bf_searcher.search_batched(test_emb)
         bf_time = time.time() - bf_start
 
@@ -201,6 +252,6 @@ def benchmark(req: BenchmarkRequest):
 if __name__ == "__main__":
     # Removed ngrok setup.
     # This runs the FastAPI server locally on http://127.0.0.1:8000
-    os.system("cls")
+    os.system("cls" if os.name == "nt" else "clear")
     print("SERVER".center(100,"-"))
     uvicorn.run(app, host="0.0.0.0", port=8000)

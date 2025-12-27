@@ -181,7 +181,7 @@ def search(query: SearchQuery):
     # 2. Search
     # Ensure we don't ask for more neighbors than ScaNN was configured for (K_NEIGHBORS)
     final_k = query.k_neighbors
-    indices, distances = searcher.search(q_emb, final_num_neighbors=final_k)
+    indices, distances = searcher.search(q_emb, final_num_neighbors=final_k, pre_reorder_num_neighbors=final_k*5)
 
     elapsed = (time.time()-start)*1000
     print(query,"time take:",elapsed)

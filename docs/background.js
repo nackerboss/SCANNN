@@ -15,7 +15,7 @@ fetch("https://api.codetabs.com/v1/proxy/?quest=http://scann.ddns.net:8000/healt
             status.textContent = "Contact me "
             status.style.color = "white"
             status.addEventListener('mousedown',()=>{
-                window.open("mailto:minh.mangbachkhoahochiminh@hcmut.edu.vn",'minh.mangbachkhoahochiminh@hcmut.edu.vn').focus()
+                window.open("mailto:minh.mangbachkhoahochiminh@hcmut.edu.vn?subject=Request%20start%20up%20server",'_blanks').focus()
             })
         })
     }

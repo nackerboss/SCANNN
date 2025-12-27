@@ -55,7 +55,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({ baseUrl }) => {
             <input
               type="range"
               min="1"
-              max="50"
+              max="1000"
               value={k}
               onChange={(e) => setK(Number(e.target.value))}
               className="w-48 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"

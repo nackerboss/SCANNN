@@ -19,7 +19,7 @@ export default function App() {
           <div className="flex items-center gap-4">
              <div className="flex items-center gap-2 px-3 py-1 bg-indigo-900/30 border border-indigo-500/30 rounded-full">
                 <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                <span className="text-xs text-indigo-400 font-mono">backend trust</span>
+                <span className="text-xs text-indigo-400 font-mono">ONLINE</span>
              </div>
           </div>
         </div>

@@ -33,3 +33,15 @@ header {
   background-color: #056c98;
   color: white;
 }
+.InfoItem
+{
+  background-color: transparent;
+  padding: 0 16px;
+  font-size: 17px;
+  color: red;
+  height: 100%;
+  cursor: progress;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
